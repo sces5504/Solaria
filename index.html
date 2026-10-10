@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0c1619"><meta name="solaria-version" content="2.1.0">
+<meta name="theme-color" content="#0c1619"><meta name="solaria-version" content="2.1.1">
 <meta name="description" content="Solaria — 原創像素俯視動作肉鴿。三職業、元素反應、升級與配裝，無限探索日蝕之後的世界。">
 <title>Solaria · 日蝕之後</title>
 <style>
@@ -22,13 +22,13 @@
  <header class="brand"><div><span class="wordmark">SOLARIA</span> <small>日蝕之後</small></div><div class="brand-right"><span class="tag">GOTHIC ELEMENTAL ROGUELIKE</span><button id="helpButton" class="icon-button">元素指南 ?</button><button id="muteButton" class="icon-button" aria-label="切換音效">音效 開</button></div></header>
  <section class="hud" aria-label="遊戲狀態"><div><div class="health-top"><span id="healthLabel">生命 · 選擇你的旅者</span><span id="levelLabel">LV. 01</span></div><div class="bar"><span id="healthBar"></span></div><div class="bar xpbar"><span id="xpBar" style="width:0%"></span></div><div class="skill-hud"><span id="skillLabel">右鍵 · 職業技能</span><div class="skill-track"><span id="skillBar"></span></div></div></div><div class="room-head"><div class="label" id="biomeLabel">THE SOLAR FRONTIER</div><div class="room-title" id="roomTitle">日光邊境</div><div class="room-dots" id="roomDots"></div><div id="roomModifiers" class="room-modifiers"></div></div><div class="score-head"><div class="label">本局分數</div><strong id="scoreLabel">000000</strong><small id="coinLabel">金幣 0 · 最高分 0</small></div></section>
  <div class="layout"><div class="stage"><canvas id="gameCanvas" width="1024" height="640" aria-label="Solaria 俯視遊戲場地"></canvas><div class="boss-health" id="bossHealth" hidden><small id="bossName"></small><div class="bar"><span id="bossBar"></span></div></div><div id="toast" class="toast" hidden></div><div id="overlay" class="overlay"><div id="modal" class="modal"></div></div></div><aside class="aside"><section><h3>你的旅者</h3><div class="aside-class" id="classLabel">尚未啟程</div><small id="classFlavor">日光仍在，旅途未完。</small></section><section><h3>戰鬥屬性</h3><div id="statList"></div></section><section><h3>元素共鳴</h3><div id="elementList" class="elements"><span class="chip">等待覺醒</span></div></section><section><h3>穿戴裝備 <span style="letter-spacing:0">[ I ]</span></h3><div id="miniEquipment"></div></section><div class="aside-note">水 × 電 → 增傷・連鎖<br>水 × 火 → 蒸汽危險區<br>火 → 解除冰霜<br>流血累積 → 爆發傷害</div></aside></div>
- <footer class="controls"><div class="control-list"><span><kbd>WASD</kbd>移動</span><span><kbd>左鍵</kbd>攻擊</span><span><kbd>右鍵</kbd>職業技能</span><span><kbd>Space</kbd>閃避</span><span><kbd>E</kbd>互動</span><span><kbd>I</kbd>背包</span><span><kbd>Esc</kbd>暫停</span></div><span id="sessionHint">選擇職業，開始探索</span></footer><div class="bottom-note"><span>AN ORIGINAL WORLD · MADE OF PIXELS & POSSIBILITY</span><span>幽暗史詩 v2.1 · 最高分儲存於此瀏覽器</span></div>
+ <footer class="controls"><div class="control-list"><span><kbd>WASD</kbd>移動</span><span><kbd>左鍵</kbd>攻擊</span><span><kbd>右鍵</kbd>職業技能</span><span><kbd>Space</kbd>閃避</span><span><kbd>E</kbd>互動</span><span><kbd>I</kbd>背包</span><span><kbd>Esc</kbd>暫停</span></div><span id="sessionHint">選擇職業，開始探索</span></footer><div class="bottom-note"><span>AN ORIGINAL WORLD · MADE OF PIXELS & POSSIBILITY</span><span>幽暗史詩 v2.1.1 · 最高分儲存於此瀏覽器</span></div>
 </main>
 <script>
 (()=>{
 'use strict';
 const W=1024,H=640,T=32,STEP=1/60;
-const CFG={hp:100,speed:195,dashSpeed:720,dashTime:.17,dashCooldown:1.1,pitDamage:.2,invuln:.9,steamWarning:.38,steamLife:1.6,steamDps:24,burnTime:3,burnDps:4,wetTime:4,iceTime:2.5,slow:.7,stunChance:.22,stunTime:.3,stunResist:1.5,bleedThreshold:100,bleedGain:28,projectileCap:200,effectCap:260,enemyCap:18,lootCap:70,bossHp:2400,enemyHpMultiplier:1.85,eliteHpMultiplier:3.1,leechMultiplier:.1,healDropChance:.07,healDropAmount:10,chestHeal:6,bossHeal:15,chainRange:190,chainTargets:5};
+const CFG={hp:100,speed:195,dashSpeed:720,dashTime:.17,dashCooldown:1.1,pitDamage:.2,invuln:.9,steamWarning:.38,steamLife:1.6,steamDps:24,burnTime:3,burnDps:4,wetTime:4,iceTime:2.5,slow:.7,stunChance:.22,stunTime:.3,stunResist:1.5,bleedThreshold:100,bleedGain:28,projectileCap:200,effectCap:260,enemyCap:18,lootCap:70,bossHp:2400,enemyHpMultiplier:1.35,eliteHpMultiplier:2.7,leechMultiplier:.1,healDropChance:.07,healDropAmount:10,chestHeal:12,bossHeal:15,chainRange:190,chainTargets:5};
 const $=id=>document.getElementById(id),canvas=$('gameCanvas'),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
 const elements={fire:{name:'火焰',color:'#f39664',glyph:'火'},ice:{name:'冰霜',color:'#b7e5e8',glyph:'冰'},water:{name:'水',color:'#83bce5',glyph:'水'},lightning:{name:'雷電',color:'#eee39e',glyph:'電'},bleed:{name:'流血',color:'#ee8c9b',glyph:'血'}};
 const classes={sword:{name:'劍士',title:'暮光守衛',description:'近身斬擊・右鍵格擋反擊',color:'#e8c585',damage:26,cooldown:.43,icon:'<path d="M25 3 10 25l5 5L30 8Z" fill="#d7e6dc"/><path d="m5 23 13 10 3-4L8 19Z" fill="#e8c585"/><path d="m9 30-5 7 4 3 6-7Z" fill="#a57858"/>',flavor:'向前一步，劍光即是日光。'},bow:{name:'弓箭手',title:'苔原遊俠',description:'遠距箭矢・右鍵蓄力貫穿',color:'#a4d19b',damage:19,cooldown:.34,icon:'<path d="M10 3q28 17 0 35" fill="none" stroke="#b8a17b" stroke-width="5"/><path d="M10 3v35" stroke="#dde2c7"/><path d="M3 20h31m-7-5 7 5-7 5" fill="none" stroke="#a4d19b" stroke-width="3"/>',flavor:'循著風的方向，讓群星穿透迷霧。'},mage:{name:'法師',title:'星火學者',description:'魔法彈・右鍵元素引爆',color:'#b1a6dd',damage:24,cooldown:.55,icon:'<path d="M13 34 25 9" stroke="#ad9775" stroke-width="5"/><path d="m26 2 7 9-8 9-7-10Z" fill="#b1a6dd"/><path d="m26 5 3 5-4 5-4-5Z" fill="#e5dafa"/>',flavor:'每一道微光，都藏著改寫世界的力量。'}};
@@ -259,27 +259,55 @@ function bossAttack(e){
 }
 
 let best=0,muted=false;try{best=Number(localStorage.getItem('solaria.best'))||0;muted=['1','true'].includes(localStorage.getItem('solaria.muted'))}catch{}
-let audio=null,game=null,mode='menu',selectedClass='sword',selectedItem=null,pendingLoot=null,toastTime=0,last=0,acc=0,renderClock=0;
+let audio=null,audioBus=null,activeVoices=0,game=null,mode='menu',selectedClass='sword',selectedItem=null,pendingLoot=null,toastTime=0,last=0,acc=0,renderClock=0;
 let keys=new Set(),mouse={x:760,y:320,down:false,inside:false};
 let rngState=1;
 function rand(){rngState^=rngState<<13;rngState^=rngState>>>17;rngState^=rngState<<5;return (rngState>>>0)/4294967296}
 function pick(a){return a[Math.floor(rand()*a.length)]}
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),angle=(a,b)=>Math.atan2(b.y-a.y,b.x-a.x),angleDiff=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
-function initAudio(){try{if(!audio)audio=new(window.AudioContext||window.webkitAudioContext)();if(audio.state==='suspended')audio.resume().catch(()=>{})}catch{}}
-function sound(kind){if(muted||!audio)return;try{const osc=audio.createOscillator(),gain=audio.createGain(),t=audio.currentTime;const tones={attack:[240,110,.06],hit:[130,65,.07],coin:[850,1200,.08],upgrade:[440,880,.25],dash:[280,100,.09],death:[220,55,.5],reaction:[340,70,.17],equip:[580,720,.12],boss:[120,240,.4]};const [a,b,d]=tones[kind]||tones.hit;osc.type=kind==='coin'||kind==='upgrade'?'triangle':'square';osc.frequency.setValueAtTime(a,t);osc.frequency.exponentialRampToValueAtTime(b,t+d);gain.gain.setValueAtTime(.025,t);gain.gain.exponentialRampToValueAtTime(.001,t+d);osc.connect(gain);gain.connect(audio.destination);osc.start(t);osc.stop(t+d+.02)}catch{}}
-function toggleMute(){muted=!muted;try{localStorage.setItem('solaria.muted',String(muted))}catch{}updateMute()}
-function updateMute(){$('muteButton').textContent='音效 '+(muted?'關':'開')}
+function initAudio(){
+ if(muted)return Promise.resolve(false);
+ try{
+  if(!audio||audio.state==='closed'){
+   audio=new(window.AudioContext||window.webkitAudioContext)({latencyHint:'interactive'});audioBus=audio.createGain();audioBus.gain.value=.65;audioBus.connect(audio.destination);activeVoices=0;
+   audio.onstatechange=updateMute;
+  }
+  if(audio.state==='running'){updateMute();return Promise.resolve(true)}
+  const context=audio,pending=Promise.resolve(context.resume()).then(()=>{updateMute();return context===audio&&context.state==='running'}).catch(()=>{updateMute();return false});
+  updateMute();return pending;
+ }catch{updateMute();return Promise.resolve(false)}
+}
+function sound(kind){
+ if(muted||!audio||audio.state!=='running'||activeVoices>=16)return;
+ try{
+  const session=audio,osc=audio.createOscillator(),gain=audio.createGain(),t=audio.currentTime;
+  const tones={attack:[240,110,.06],hit:[130,65,.07],coin:[850,1200,.08],upgrade:[440,880,.25],dash:[280,100,.09],death:[220,55,.5],reaction:[340,70,.17],equip:[580,720,.12],boss:[120,240,.4]};
+  const [a,b,d]=tones[kind]||tones.hit;osc.type=kind==='coin'||kind==='upgrade'?'triangle':'square';osc.frequency.setValueAtTime(a,t);osc.frequency.exponentialRampToValueAtTime(b,t+d);
+  gain.gain.setValueAtTime(kind==='hit'||kind==='death'?.09:.075,t);gain.gain.exponentialRampToValueAtTime(.001,t+d);osc.connect(gain);gain.connect(audioBus);
+  activeVoices++;osc.onended=()=>{if(session===audio)activeVoices=Math.max(0,activeVoices-1);osc.disconnect();gain.disconnect()};osc.start(t);osc.stop(t+d+.02);
+ }catch{}
+}
+function previewSound(){initAudio().then(ready=>{if(ready)sound('equip')})}
+function toggleMute(retryBlocked=true){
+ if(retryBlocked&&!muted&&audio&&audio.state!=='running'){previewSound();return}
+ muted=!muted;try{localStorage.setItem('solaria.muted',String(muted))}catch{}
+ if(audioBus)audioBus.gain.value=muted?0:.65;updateMute();if(!muted)previewSound();
+}
+function updateMute(){
+ const blocked=!muted&&audio&&audio.state!=='running',button=$('muteButton');button.textContent=muted?'音效 關':blocked?'音效 待啟用':'音效 開';
+ button.setAttribute?.('aria-pressed',String(muted));button.title=muted?'點擊或按 M 開啟音效':blocked?'點擊重新啟用音效':'點擊或按 M 靜音';
+}
 function toast(text,time=2.5){$('toast').textContent=text;$('toast').hidden=false;toastTime=time}
-function setMode(next){mode=next;mouse.down=false;keys.clear();acc=0;$('overlay').hidden=next==='playing';if(game&&next!=='playing')game.player.charging=false}
+function setMode(next){mode=next;mouse.down=false;keys.clear();acc=0;$('overlay').hidden=next==='playing';if(game&&next!=='playing')game.player.charging=false;if(next==='playing'&&!muted)initAudio()}
 function showMenu(){setMode('menu');$('bossHealth').hidden=true;$('modal').className='modal';$('modal').innerHTML=`<div class="eyebrow">A JOURNEY BEYOND THE ECLIPSE</div><h1 class="hero-title">SOLARIA</h1><div class="subtitle">日 蝕 之 後</div><p class="intro">穿越幽暗遺跡與六重秘境，尋找元素之間的共鳴。<br>每一次啟程，都是一種新的可能。</p><div class="class-grid">${Object.entries(classes).map(([id,c],i)=>`<button class="class-card ${id===selectedClass?'selected':''}" data-class="${id}" aria-pressed="${id===selectedClass}"><span class="class-num">0${i+1}</span><svg viewBox="0 0 40 42" aria-hidden="true">${c.icon}</svg><strong>${c.name}</strong><small>${c.title}<br>${c.description}</small></button>`).join('')}</div><div class="menu-actions"><button class="primary" id="startButton">啟程探索　→</button></div><div class="hint">每局重新構築 · 升級三選一 · 元素配裝 · 無限挑戰</div><div class="mobile-warning">本遊戲需要電腦鍵盤與滑鼠。</div>`;document.querySelectorAll('[data-class]').forEach(b=>b.onclick=()=>{selectedClass=b.dataset.class;showMenu()});$('startButton').onclick=()=>startRun(selectedClass);updateHud()}
 function status(){return {burn:0,burnPower:0,burnOwner:null,ice:0,wet:0,stun:0,stunResist:0,bleed:0,bleedWait:0,flash:0,invuln:0,hitGrace:0}}
 function actor(x,y,team,hp){return {x,y,team,hp,maxHp:hp,r:12,alive:true,...status()}}
 function startRun(cls,seed){
- initAudio();rngState=(seed??(Date.now()^Math.floor(Math.random()*0xffffffff)))>>>0||1;
+ previewSound();rngState=(seed??(Date.now()^Math.floor(Math.random()*0xffffffff)))>>>0||1;
  game={cls,theme:THEMES[0],room:1,completed:0,kills:0,bosses:0,coins:0,score:0,time:0,distance:0,level:1,xp:0,upgrades:{},equipment:{armor:null,amulet:null,ring:null},bag:[],enemies:[],projectiles:[],zones:[],effects:[],swings:[],loot:[],telegraphs:[],tasks:[],roomClear:false,chestOpened:false,selectedLoot:null,serial:0,cycleIndex:0,droppedThisCycle:0,lastLegendBoss:0};
  game.player={...actor(112,H/2,'player',CFG.hp),attackCd:0,dashCd:0,dashLeft:0,dashX:0,dashY:0,lastSafe:{x:112,y:H/2},aim:0,orbitCd:0,fallLeft:0,fallFrom:null,skillCd:0,guard:0,charging:false,charge:0,hitGrace:0};
- recalc();generateRoom();setMode('playing');updateHud();toast('暮色草原 · 右鍵施放 '+SKILLS[cls].name,3);
+ recalc();generateRoom();setMode('playing');updateHud();toast('暮色草原 · 右鍵施放 '+SKILLS[cls].name+(muted?' · 音效關閉，按 M 開啟':''),3);
 }
 function lv(id){return game?.upgrades[id]||0}
 function recalc(){
@@ -449,7 +477,7 @@ function showInventory(message='比較稀有度與詞條，選擇你的共鳴 ·
 }
 function closeInventory(){pendingLoot=null;selectedItem=null;setMode('playing');updateHud()}
 function pause(){if(mode==='playing'){setMode('paused');$('modal').className='modal';$('modal').innerHTML=`<div class="eyebrow">A MOMENT OF STILLNESS</div><h2>日光，等你歸來</h2><p class="intro">遊戲已暫停。休息一下，旅途仍在。</p><div class="menu-actions"><button class="primary" id="resumeButton">繼續探索</button><button id="returnMenu">結束本局</button></div>`;$('resumeButton').onclick=()=>setMode('playing');$('returnMenu').onclick=endRun}else if(mode==='paused')setMode('playing')}
-function help(){const previous=mode;if(previous==='upgrade'||previous==='inventory'||previous==='dead')return;setMode('help');$('modal').className='modal';$('modal').innerHTML=`<div class="eyebrow">ELEMENTAL RESONANCE</div><h2>元素之間，皆有可能</h2><div class="reaction-help"><span class="element-water">水</span> × <span class="element-lightning">電</span>：雷電會在敵人之間接力；濕潤目標增傷並連鎖最多五名，電弧網可繼續擴充。<br><span class="element-water">水</span> × <span class="element-fire">火</span>：化解燃燒；敵我水火彈相撞也會抵消並產生蒸汽。<br><strong>蒸汽</strong>：出現預警後，傷害範圍內所有人，包括你。<br><span class="element-fire">火</span>：持續灼燒，移除冰霜減速。<br><span class="element-ice">冰</span>：降低移動速度。<span class="element-lightning">電</span>：機率造成短暫暈眩。<br><span class="element-bleed">流血</span>：累積到滿時爆血，不與元素交互。<br>同次命中先結算水火，再處理火冰與水電；反應不會無限自我觸發。<br><br>閃避具有短暫無敵；掉坑扣最大生命 20%，存活會彈回安全地面。<br>右鍵：劍士格擋反擊、弓箭手按住蓄力、法師引爆元素。<br>灰／藍／紫／金代表普通／魔法／稀有／傳奇，傳奇有獨特機制與落地光柱。<br>升級最多選兩種主元素，流血獨立；裝備可以補足元素。取得附魔後會解鎖專精分支。<br>第 2 區起，小關卡至少一名精英；有額外招式與魔法以上裝備獎勵（每輪仍有掉裝上限）。<br>關卡上方顯示隨機試煉詞條，Boss 戰沒有關卡詞條。<br>怪物有 7% 機率掉補血道具，恢復 10 點；寶箱只補 6 點。吸血大幅降低，補血須走近拾取。<br>靠近裝備／寶箱按 E，按 I 比較與穿戴裝備。金幣用於本局計分。</div><button class="primary" id="closeHelp">了解，返回</button>`;$('closeHelp').onclick=()=>{if(previous==='menu')showMenu();else if(previous==='paused'){setMode('playing');pause()}else setMode('playing')}}
+function help(){const previous=mode;if(previous==='upgrade'||previous==='inventory'||previous==='dead')return;setMode('help');$('modal').className='modal';$('modal').innerHTML=`<div class="eyebrow">ELEMENTAL RESONANCE</div><h2>元素之間，皆有可能</h2><div class="reaction-help"><span class="element-water">水</span> × <span class="element-lightning">電</span>：雷電會在敵人之間接力；濕潤目標增傷並連鎖最多五名，電弧網可繼續擴充。<br><span class="element-water">水</span> × <span class="element-fire">火</span>：化解燃燒；敵我水火彈相撞也會抵消並產生蒸汽。<br><strong>蒸汽</strong>：出現預警後，傷害範圍內所有人，包括你。<br><span class="element-fire">火</span>：持續灼燒，移除冰霜減速。<br><span class="element-ice">冰</span>：降低移動速度。<span class="element-lightning">電</span>：機率造成短暫暈眩。<br><span class="element-bleed">流血</span>：累積到滿時爆血，不與元素交互。<br>同次命中先結算水火，再處理火冰與水電；反應不會無限自我觸發。<br><br>閃避具有短暫無敵；掉坑扣最大生命 20%，存活會彈回安全地面。<br>右鍵：劍士格擋反擊、弓箭手按住蓄力、法師引爆元素。<br>灰／藍／紫／金代表普通／魔法／稀有／傳奇，傳奇有獨特機制與落地光柱。<br>升級最多選兩種主元素，流血獨立；裝備可以補足元素。取得附魔後會解鎖專精分支。<br>第 2 區起，小關卡至少一名精英；有額外招式與魔法以上裝備獎勵（每輪仍有掉裝上限）。<br>關卡上方顯示隨機試煉詞條，Boss 戰沒有關卡詞條。<br>怪物有 7% 機率掉補血道具，恢復 10 點；寶箱恢復 12 點。吸血大幅降低，補血須走近拾取。<br>靠近裝備／寶箱按 E，按 I 比較與穿戴裝備。金幣用於本局計分。</div><button class="primary" id="closeHelp">了解，返回</button>`;$('closeHelp').onclick=()=>{if(previous==='menu')showMenu();else if(previous==='paused'){setMode('playing');pause()}else setMode('playing')}}
 function endRun(){if(!game||mode==='dead')return;game.player.alive=false;sound('death');const record=game.score>best;best=Math.max(best,game.score);try{localStorage.setItem('solaria.best',String(best))}catch{}setMode('dead');$('modal').className='modal';$('modal').innerHTML=`<div class="eyebrow">${record?'A NEW CONSTELLATION · 新紀錄':'THE LIGHT WILL RETURN'}</div><h2>旅途落幕，日光未盡</h2><p class="intro">${classes[game.cls].name} · 等級 ${game.level} · 挑戰至第 ${game.room} 區域<br>這次的共鳴，會成為下次啟程的經驗。</p><div class="result-grid"><div><strong>${game.score}</strong><small>本局分數</small></div><div><strong>${game.completed}</strong><small>完成區域</small></div><div><strong>${game.kills}</strong><small>擊敗敵人</small></div><div><strong>${game.coins}</strong><small>收集金幣</small></div></div><p class="hint">最高分 ${best} · 擊敗 Boss ${game.bosses} · 旅程 ${Math.floor(game.time/60)}:${String(Math.floor(game.time%60)).padStart(2,'0')}</p><div class="menu-actions"><button class="primary" id="retryButton">再次啟程</button><button id="changeClass">選擇職業</button></div>`;$('retryButton').onclick=()=>startRun(game.cls);$('changeClass').onclick=showMenu;updateHud()}
 function updateHud(){
  const p=game?.player,s=game?.stats,c=game?classes[game.cls]:null;
@@ -578,7 +606,7 @@ function draw(){
 }
 function frame(ts){const elapsed=Math.min(.1,(ts-last)/1000||0);last=ts;renderClock+=elapsed;if(toastTime>0){toastTime-=elapsed;if(toastTime<=0)$('toast').hidden=true}if(mode==='playing'){acc+=elapsed;while(acc>=STEP&&mode==='playing'){update(STEP);acc-=STEP}}else acc=0;draw();requestAnimationFrame(frame)}
 canvas.addEventListener('mousemove',e=>{const r=canvas.getBoundingClientRect();mouse.x=(e.clientX-r.left)*W/r.width;mouse.y=(e.clientY-r.top)*H/r.height;mouse.inside=true});canvas.addEventListener('mouseleave',()=>{mouse.inside=false;mouse.down=false;if(game)game.player.charging=false});canvas.addEventListener('mousedown',e=>{if(mode==='playing'){initAudio();if(e.button===0)mouse.down=true;if(e.button===2)playerSkill()}});window.addEventListener('mouseup',e=>{if(e.button===0)mouse.down=false;if(e.button===2)releaseSkill()});canvas.addEventListener('contextmenu',e=>e.preventDefault());
-window.addEventListener('keydown',e=>{const key=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(key))e.preventDefault();if(e.repeat){if(mode==='playing')keys.add(key);return}if(key==='m'){toggleMute();return}if(key==='escape'){if(mode==='inventory')closeInventory();else if(mode==='help')$('closeHelp')?.click();else pause();return}if(key==='i'&&game){if(mode==='playing'){selectedItem=null;showInventory()}else if(mode==='inventory')closeInventory();return}if(key==='e'&&mode==='playing'){interact();return}if(mode==='playing')keys.add(key);if(mode==='menu'&&key==='enter')startRun(selectedClass)});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>{keys.clear();mouse.down=false;if(mode==='playing')pause()});document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='playing')pause()});$('muteButton').onclick=toggleMute;$('helpButton').onclick=help;
+window.addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(!e.repeat&&game&&!muted)initAudio();if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(key))e.preventDefault();if(e.repeat){if(mode==='playing')keys.add(key);return}if(key==='m'){toggleMute(false);return}if(key==='escape'){if(mode==='inventory')closeInventory();else if(mode==='help')$('closeHelp')?.click();else pause();return}if(key==='i'&&game){if(mode==='playing'){selectedItem=null;showInventory()}else if(mode==='inventory')closeInventory();return}if(key==='e'&&mode==='playing'){interact();return}if(mode==='playing')keys.add(key);if(mode==='menu'&&key==='enter')startRun(selectedClass)});window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>{keys.clear();mouse.down=false;if(mode==='playing')pause()});document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='playing')pause();else if(!document.hidden&&audio&&!muted)initAudio()});window.addEventListener('focus',()=>{if(audio&&!muted)initAudio()});$('muteButton').onclick=toggleMute;$('helpButton').onclick=help;
 const ART=(()=>{
 const C={ink:'#13232b',cream:'#f7e7bd',blue:'#90d9ef',fire:'#ff9a59',water:'#69c5f5',ice:'#c7f9ff',electric:'#fff1a1',gold:'#ffc963',purple:'#d79af7',red:'#f88290'};
 const hash=(x,y,k=0)=>{const n=Math.sin(x*127.1+y*311.7+k*77.3)*43758.5453;return n-Math.floor(n)};
@@ -603,8 +631,8 @@ function flames(c,x,y,t,intensity=1){glow(c,x,y-10,36,'#ffa964',.35*intensity);f
 return {rect,poly,disc,line,glow,tree,rock,column,crystal,flower,mushroom,knight,wolf,enemy,boss,bolt,flames,hash,shade};})();
 updateMute();showMenu();requestAnimationFrame(frame);
 // The regression harness opts in before page load; normal gameplay exposes no debug UI.
-if(globalThis.__SOLARIA_TEST__)Object.assign(globalThis.__SOLARIA_TEST__,{startRun,generateRoom,spawnEnemy,actor,applyHit,applyElements,damage,statusTick,steam,tickZones,tickProjectiles,projectile,getAttack,playerAttack,scoreRoom,update,reachable,validFloor,tileAt,equipItem,unequipItem,createItem,chooseUpgrade,showUpgrade,showInventory,closeInventory,interact,collectLoot,checkLevel,availableUpgrades,setMode,endRun,GEAR,UPG,CFG,ROOM_MODS,ELITE_TRAITS,MAIN_ELEMENTS,rollUpgradeOffers,chainLightning,eliteAttack,elements,resolveItem,RARITIES,AFFIXES,LEGENDARY_GEAR,MONSTERS,SKILLS,THEMES,playerSkill,releaseSkill,counterStrike,bossAttack,enemyAttack,tickTasks,grantGear,dashRelics,telegraph,addZone,recalc,emitEffect,burst,castRing,tickTelegraphs,get game(){return game}});
-if(globalThis.__SOLARIA_TEST__)Object.defineProperties(globalThis.__SOLARIA_TEST__,{game:{get:()=>game},mode:{get:()=>mode},keys:{get:()=>keys},mouse:{get:()=>mouse},rng:{get:()=>rngState,set:v=>rngState=v||1}});
+if(globalThis.__SOLARIA_TEST__)Object.assign(globalThis.__SOLARIA_TEST__,{startRun,generateRoom,spawnEnemy,actor,applyHit,applyElements,damage,statusTick,steam,tickZones,tickProjectiles,projectile,getAttack,playerAttack,scoreRoom,update,reachable,validFloor,tileAt,equipItem,unequipItem,createItem,chooseUpgrade,showUpgrade,showInventory,closeInventory,interact,collectLoot,checkLevel,availableUpgrades,setMode,endRun,initAudio,sound,toggleMute,GEAR,UPG,CFG,ROOM_MODS,ELITE_TRAITS,MAIN_ELEMENTS,rollUpgradeOffers,chainLightning,eliteAttack,elements,resolveItem,RARITIES,AFFIXES,LEGENDARY_GEAR,MONSTERS,SKILLS,THEMES,playerSkill,releaseSkill,counterStrike,bossAttack,enemyAttack,tickTasks,grantGear,dashRelics,telegraph,addZone,recalc,emitEffect,burst,castRing,tickTelegraphs,get game(){return game}});
+if(globalThis.__SOLARIA_TEST__)Object.defineProperties(globalThis.__SOLARIA_TEST__,{game:{get:()=>game},mode:{get:()=>mode},keys:{get:()=>keys},mouse:{get:()=>mouse},rng:{get:()=>rngState,set:v=>rngState=v||1},audio:{get:()=>audio},audioBus:{get:()=>audioBus},muted:{get:()=>muted},activeVoices:{get:()=>activeVoices}});
 })();
 </script>
 </body>
