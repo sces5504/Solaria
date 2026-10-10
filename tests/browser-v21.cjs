@@ -6,7 +6,7 @@ const {pathToFileURL}=require('node:url');
  const context=await browser.newContext({viewport:{width:1440,height:1060}});await context.addInitScript(()=>window.__SOLARIA_TEST__={});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(process.env.SOLARIA_URL||pathToFileURL(path.resolve(__dirname,'../index.html')).href);
- assert.equal(await page.locator('meta[name="solaria-version"]').getAttribute('content'),'5.0.0');
+ assert.equal(await page.locator('meta[name="solaria-version"]').getAttribute('content'),'6.0.0');
  const output=path.resolve(__dirname,'../artifacts');fs.mkdirSync(output,{recursive:true});
  await page.evaluate(()=>{const t=window.__SOLARIA_TEST__;t.startRun('mage',73);t.game.room=3;for(let seed=1;seed<1000;seed++){t.rng=Math.imul(seed,0x9e3779b1);t.generateRoom({eventId:null});if(t.game.roomMods.length===2&&t.game.enemies.filter(e=>e.elite).length===2)break}t.game.player.invuln=100});
  await page.locator('#roomAnnouncement').click();assert.equal(await page.locator('#roomModifiers span').count(),2);
