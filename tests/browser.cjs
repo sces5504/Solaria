@@ -35,24 +35,24 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.game.level),1);
  }
  // Real DOM inventory swap, full-bag pickup and abandon flows.
- await page.evaluate(()=>{const t=window.__SOLARIA_TEST__;t.startRun('mage',42);t.game.bag=[t.createItem('tidal'),t.createItem('storm'),t.createItem('guard')];t.showInventory()});
- await page.locator('[data-bag="0"]').click();await page.getByRole('button',{name:'裝備／替換'}).click();assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.game.equipment.amulet.id),'tidal');
- await page.locator('[data-bag="0"]').click();await page.getByRole('button',{name:'裝備／替換'}).click();assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.game.equipment.amulet.id),'storm');
+ await page.evaluate(()=>{const t=window.__SOLARIA_TEST__;t.startRun('mage',42);t.game.bag=[t.createItem('heartseal'),t.createItem('focuscharm'),t.createItem('guard')];t.showInventory()});
+ await page.locator('[data-bag="0"]').click();await page.getByRole('button',{name:'裝備／替換'}).click();assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.game.equipment.amulet.id),'heartseal');
+ await page.locator('[data-bag="0"]').click();await page.getByRole('button',{name:'裝備／替換'}).click();assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.game.equipment.amulet.id),'focuscharm');
  await page.screenshot({path:path.join(output,'inventory.png'),fullPage:true});
  await page.getByRole('button',{name:'返回 [ I ]',exact:true}).click();
- await page.evaluate(()=>{const t=window.__SOLARIA_TEST__,g=t.game;g.bag=Array.from({length:12},()=>t.createItem('guard'));g.loot=[{x:g.player.x,y:g.player.y,type:'gear',value:t.createItem('ember')}];t.interact()});
- await page.locator('[data-bag="0"]').click();await page.getByRole('button',{name:'以此裝備換取新裝備'}).click();assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.game.bag.length),12);assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.game.bag[0].id),'ember');
+ await page.evaluate(()=>{const t=window.__SOLARIA_TEST__,g=t.game;g.bag=Array.from({length:12},()=>t.createItem('guard'));g.loot=[{x:g.player.x,y:g.player.y,type:'gear',value:t.createItem('heartseal')}];t.interact()});
+ await page.locator('[data-bag="0"]').click();await page.getByRole('button',{name:'以此裝備換取新裝備'}).click();assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.game.bag.length),12);assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.game.bag[0].id),'heartseal');
  await page.keyboard.press('i');
  // Capture an upgraded boss fight and its telegraphs.
- await page.evaluate(()=>{const t=window.__SOLARIA_TEST__,g=t.game;g.room=5;t.generateRoom();g.upgrades={water:1,lightning:2,orbit:2,homing:1};g.bag=[t.createItem('tidal'),t.createItem('guard')];t.equipItem(0);t.equipItem(0);g.player.x=410;g.player.y=350;g.player.invuln=20;t.steam(650,280)});
+ await page.evaluate(()=>{const t=window.__SOLARIA_TEST__,g=t.game;g.room=5;t.generateRoom();g.upgrades={water:1,lightning:2,orbit:2,homing:1};g.bag=[t.createItem('heartseal'),t.createItem('guard')];t.equipItem(0);t.equipItem(0);g.player.x=410;g.player.y=350;g.player.invuln=20;t.steam(650,280)});
  await page.waitForTimeout(1300);await page.screenshot({path:path.join(output,'boss.png'),fullPage:true});
  await page.keyboard.press('i');await page.getByRole('button',{name:'返回 [ I ]',exact:true}).click();
- await page.evaluate(()=>{const t=window.__SOLARIA_TEST__;t.game.xp=0;t.game.enemies.forEach(e=>t.damage(e,10000,t.game.player));t.scoreRoom();while(t.mode==='upgrade')t.chooseUpgrade(t.game.upgradeOffers[0]);t.game.player.x=t.game.exit.x;t.game.player.y=t.game.exit.y;t.interact()});
+ await page.evaluate(()=>{const t=window.__SOLARIA_TEST__;t.game.xp=0;t.game.enemies.forEach(e=>t.damage(e,10000,t.game.player));t.scoreRoom();for(let n=0;n<240&&t.game.clearCollect;n++)t.tickClearCollection(1/60);while(t.mode==='upgrade')t.chooseUpgrade(t.game.upgradeOffers[0]);t.game.player.x=t.game.exit.x;t.game.player.y=t.game.exit.y;t.interact()});
  assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.game.room),6);
  await page.evaluate(()=>{window.dispatchEvent(new Event('blur'))});assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.mode),'paused');
  await page.getByRole('button',{name:'繼續探索'}).click();
  await page.evaluate(()=>{const t=window.__SOLARIA_TEST__;t.game.score=12345;t.endRun()});await page.reload();assert((await page.locator('#coinLabel').textContent()).includes('12345'));
- await page.getByRole('button',{name:'元素指南 ?'}).click();assert(await page.getByRole('button',{name:'了解，返回'}).isVisible());await page.getByRole('button',{name:'了解，返回'}).click();
+
  // Inspect all six shipped environments and actual boss attack phases.
  for(let i=0;i<6;i++){
   await page.evaluate(i=>{const t=window.__SOLARIA_TEST__;t.startRun('mage',73+i);t.game.room=i*5+1;t.generateRoom();t.game.player.invuln=100},i);

@@ -10,4 +10,5 @@ function harness(cls='sword',seed=42){
  const sandbox={console,Math,Date,Set,Map,localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},document:{getElementById:element,querySelectorAll:()=>[],addEventListener(){}},window:{addEventListener(){}},requestAnimationFrame(){},__SOLARIA_TEST__:api};
  vm.createContext(sandbox);vm.runInContext(source,sandbox,{filename:'solaria-game.js'});api.startRun(cls,seed);return {api,nodes,storage};
 }
-module.exports={harness};
+function settle(api){for(let i=0;i<240&&api.game.clearCollect;i++)api.tickClearCollection(1/60)}
+module.exports={harness,settle};
