@@ -19,13 +19,18 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
   await page.evaluate(cls=>window.__SOLARIA_TEST__.startRun(cls,73),cls);
   assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.mode),'playing');
   await page.mouse.move(650,410);await page.mouse.down();await page.waitForTimeout(450);await page.mouse.up();
+  const bounds=await page.locator('#gameCanvas').boundingBox();await page.mouse.move(bounds.x+bounds.width*.55,bounds.y+bounds.height*.5);
+  await page.mouse.down({button:'right'});
+  assert((await page.evaluate(()=>window.__SOLARIA_TEST__.game.player.skillCd))>0);
+  if(cls==='bow'){await page.waitForFunction(()=>window.__SOLARIA_TEST__.game.player.charge>.2,{},{timeout:3000});assert((await page.evaluate(()=>window.__SOLARIA_TEST__.game.player.charge))>.2)}
+  await page.mouse.up({button:'right'});assert((await page.locator('#skillLabel').textContent()).length>4);
   await page.keyboard.press('i');assert(await page.locator('.inventory-modal').isVisible());
   const paused=await page.evaluate(()=>window.__SOLARIA_TEST__.game.time);await page.waitForTimeout(150);assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.game.time),paused);
   await page.keyboard.press('i');await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.mode),'paused');
   await page.getByRole('button',{name:'繼續探索'}).click();
-  await page.evaluate(()=>{const t=window.__SOLARIA_TEST__;t.game.xp=100;t.checkLevel()});
+  await page.evaluate(()=>{const t=window.__SOLARIA_TEST__;t.game.xp=40+(t.game.level-1)*20;t.checkLevel()});
   assert.equal(await page.locator('[data-upgrade]').count(),3);await page.locator('[data-upgrade]').first().click();
-  await page.evaluate(()=>{const t=window.__SOLARIA_TEST__;t.game.xp=0;t.game.player.invuln=0;t.damage(t.game.player,10000)});
+  await page.evaluate(()=>{const t=window.__SOLARIA_TEST__;t.game.xp=0;t.game.player.invuln=0;t.game.player.hitGrace=0;t.damage(t.game.player,10000)});
   assert(await page.getByRole('button',{name:'再次啟程'}).isVisible());await page.getByRole('button',{name:'再次啟程'}).click();
   assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.game.level),1);
  }
@@ -48,8 +53,22 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
  await page.getByRole('button',{name:'繼續探索'}).click();
  await page.evaluate(()=>{const t=window.__SOLARIA_TEST__;t.game.score=12345;t.endRun()});await page.reload();assert((await page.locator('#coinLabel').textContent()).includes('12345'));
  await page.getByRole('button',{name:'元素指南 ?'}).click();assert(await page.getByRole('button',{name:'了解，返回'}).isVisible());await page.getByRole('button',{name:'了解，返回'}).click();
+ // Inspect all six shipped environments and actual boss attack phases.
+ for(let i=0;i<6;i++){
+  await page.evaluate(i=>{const t=window.__SOLARIA_TEST__;t.startRun('mage',73+i);t.game.room=i*5+1;t.generateRoom();t.game.player.invuln=100},i);
+  await page.waitForTimeout(150);await page.screenshot({path:path.join(output,`biome-${i}.png`),fullPage:true});
+  await page.evaluate(()=>{const t=window.__SOLARIA_TEST__,g=t.game;g.room+=4;t.generateRoom();g.player.x=290;g.player.y=410;g.player.invuln=100;const e=g.enemies[0];e.hp=e.maxHp*.28;t.update(1/60);e.attackCd=0;e.recovery=0;e.patternIndex=2;t.enemyAttack(e)});
+  await page.waitForTimeout(1050);assert.equal(await page.evaluate(()=>window.__SOLARIA_TEST__.game.enemies[0].phase),3);
+  await page.screenshot({path:path.join(output,`boss-${i}.png`),fullPage:true});
+ }
+ // Rarity names, rolled affixes and a visible legendary drop beam.
+ await page.evaluate(()=>{const t=window.__SOLARIA_TEST__,g=t.game;g.player.invuln=100;g.loot=[{x:530,y:380,type:'gear',value:t.createItem('tidaleye'),phase:0}];g.bag=[t.createItem('guard',{rarity:'rare'}),t.createItem('starband')];t.showInventory()});
+ await page.locator('[data-bag="0"]').click();assert(await page.locator('.affix-line').count()===2);assert((await page.locator('.item-rarity').textContent()).includes('稀有'));
+ await page.screenshot({path:path.join(output,'rarity-inventory.png'),fullPage:true});
+ await page.locator('[data-bag="1"]').click();assert((await page.locator('.item-rarity').textContent()).includes('傳奇'));assert(await page.locator('.legend-note').isVisible());
+ await page.keyboard.press('i');await page.screenshot({path:path.join(output,'legendary-drop.png'),fullPage:true});
  assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
- console.log('Browser checks passed: 3 classes, combat inputs, upgrade, inventory, full bag, boss progression, death/retry, focus pause, saved best, offline requests.');
+ console.log('Browser checks passed: 3 class right-click skills, upgrade, inventory/full bag/affixes, 6 biomes, 6 phase-3 bosses, legendary beam, death/retry, focus pause, saved best, zero external requests.');
  console.log('Screenshots:',output);
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});
