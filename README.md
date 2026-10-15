@@ -2,16 +2,13 @@
 
 <p align="center">
   <a href="https://sces5504.github.io/Solaria/">
-    <img src="assets/social/polisher-ca0b531547ac.png" alt="Solaria 日蝕之後：星空之境 Boss 戰實機畫面" width="960">
+    <img src="assets/social/polisher-readme-1f7ca81c966d.png" alt="Solaria 日蝕之後：幽暗史詩像素動作肉鴿與星空之境戰鬥畫面" width="1200">
   </a>
 </p>
 
-[![線上遊玩](https://img.shields.io/badge/Live_Demo-Play-a5e0b5?style=flat-square&labelColor=17212d)](https://sces5504.github.io/Solaria/)
-[![GitHub 原始碼](https://img.shields.io/badge/GitHub-Source-efce86?style=flat-square&labelColor=17212d)](https://github.com/sces5504/Solaria)
+[![線上遊玩](https://img.shields.io/badge/Live_Demo-Play-efce86?style=flat&labelColor=17212d)](https://sces5504.github.io/Solaria/) [![GitHub 原始碼](https://img.shields.io/badge/GitHub-Source-58616b?style=flat&labelColor=17212d)](https://github.com/sces5504/Solaria)
 
-# Solaria · 日蝕之後
-
-**三種職業，兩種元素共鳴，一段穿越六重秘境的旅途。**
+# Solaria
 
 幽暗史詩像素風的俯視動作肉鴿。選擇劍士、弓箭手或法師，運用元素共鳴、升級與配裝，穿越六重秘境，挑戰守衛與最終 Boss「索拉里斯・蝕日之王」。
 
