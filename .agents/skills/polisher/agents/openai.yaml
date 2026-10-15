@@ -1,4 +1,0 @@
-interface:
-  display_name: "Polisher"
-  short_description: "Polish README design, writing, banners and Pages previews."
-  default_prompt: "請使用 $polisher 改善這個專案的 README 文案、排版、橫幅與徽章，以及 GitHub Pages 社群分享預覽。"
