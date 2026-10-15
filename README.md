@@ -1,8 +1,18 @@
 [開始遊玩 Solaria](https://sces5504.github.io/Solaria/)
 
+<p align="center">
+  <a href="https://sces5504.github.io/Solaria/">
+    <img src="assets/social/polisher-ca0b531547ac.png" alt="Solaria 日蝕之後：星空之境 Boss 戰實機畫面" width="960">
+  </a>
+</p>
+
 # Solaria · 日蝕之後
 
+**三種職業，兩種元素共鳴，一段穿越六重秘境的旅途。**
+
 幽暗史詩像素風的俯視動作肉鴿。選擇劍士、弓箭手或法師，運用元素共鳴、升級與配裝，穿越六重秘境，挑戰守衛與最終 Boss「索拉里斯・蝕日之王」。
+
+[立即遊玩](https://sces5504.github.io/Solaria/) · [操作指南](#操作) · [下載離線版](https://github.com/sces5504/Solaria/blob/main/index.html)
 
 **需要電腦鍵盤與滑鼠。** 可直接在瀏覽器遊玩，也可下載 `index.html` 後離線開啟，不需安裝套件、登入帳號或啟動伺服器。
 
