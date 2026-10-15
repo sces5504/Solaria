@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://sces5504.github.io/Solaria/">
-    <img src="assets/social/polisher-readme-1f7ca81c966d.png" alt="Solaria 日蝕之後：幽暗史詩像素動作肉鴿與星空之境戰鬥畫面" width="1200">
+    <img src="assets/social/polisher-readme-28a8eb77ae41.png" alt="Solaria 日蝕之後：幽暗史詩像素動作肉鴿與蝕日之王的雷射彈幕戰鬥畫面" width="1200">
   </a>
 </p>
 
